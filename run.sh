@@ -4,6 +4,8 @@ python -m pip install -r requirements.txt
 
 # to install nltk packages
 python -m nltk.downloader wordnet
+python -m nltk.downloader stopwords
+python -m nltk.downloader wordnet
 
 # to run ETL pipeline
 python data/process_data.py data/disaster_messages.csv data/disaster_categories.csv data/DisasterResponse.db

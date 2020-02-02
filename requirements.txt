@@ -1,0 +1,8 @@
+numpy
+pandas
+sklearn
+matplotlib
+seaborn
+nltk
+sqlalchemy
+flask

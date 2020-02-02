@@ -140,3 +140,7 @@ data/
 
 # Pycharm config
 .idea/
+
+# ignore SQLite files
+notebook/InsertDatabaseName.db
+notebook/.ipynb_checkpoints

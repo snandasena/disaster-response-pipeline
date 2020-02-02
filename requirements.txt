@@ -6,3 +6,6 @@ seaborn
 nltk
 sqlalchemy
 flask
+jupyter
+plotly
+sklearn

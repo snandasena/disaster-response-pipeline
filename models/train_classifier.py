@@ -7,8 +7,8 @@ import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.multiclass import OneVsRestClassifier
@@ -61,10 +61,7 @@ def build_pipeline(estimator):
 
 
 def build_model():
-    estimator = MultiOutputClassifier(
-        OneVsRestClassifier(SGDClassifier(loss='modified_huber', penalty='elasticnet',
-                                          alpha=1e-4, random_state=42,
-                                          shuffle=True, n_jobs=5)))
+    estimator = MultiOutputClassifier(OneVsRestClassifier(RandomForestClassifier(n_jobs=5)))
     pipeline = build_pipeline(estimator)
     return pipeline
 

@@ -1,24 +1,80 @@
+import re
 import sys
+
+import nltk
+# import libraries
+import pandas as pd
+from nltk.corpus import stopwords
+from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.linear_model import SGDClassifier
+from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.pipeline import Pipeline
+from sqlalchemy import create_engine
+
+# install required NLTK corpus
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('punkt')
+
+stop_words = stopwords.words('english')
+lemmatizer = WordNetLemmatizer()
+url_regex = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+
 
 def load_data(database_filepath):
-    pass
+    # load data from database
+    engine = create_engine('sqlite:///{}'.format(database_filepath))
+    df = pd.read_sql("select * from DisasterResponse", engine)
+    X = df['message']
+    Y = df.drop(['id', 'message', 'original', 'genre'], axis=1)
+    return X, Y, Y.columns.values
 
 
 def tokenize(text):
-    pass
+    # remove URL
+    text = re.sub(url_regex, " ", text.lower())
+    # Normalize case and remove punctuation
+    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
+
+    # tokernize test
+    tokens = word_tokenize(text)
+
+    # lemmatize and remove stop stop words
+    tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words]
+    return tokens
+
+
+def build_pipeline(estimator):
+    pipeline = Pipeline([
+        ('transformer', Pipeline([
+            ('vect', CountVectorizer(tokenizer=tokenize)),
+            ('tfidf', TfidfTransformer())
+        ])),
+        ('clf', estimator)
+    ])
+    return pipeline
 
 
 def build_model():
-    pass
+    estimator = MultiOutputClassifier(
+        OneVsRestClassifier(SGDClassifier(loss='modified_huber', penalty='elasticnet',
+                                          alpha=1e-4, random_state=42,
+                                          shuffle=True, n_jobs=5)))
+    pipeline = build_pipeline(estimator)
+    return pipeline
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    prediction = model.predict(X_test)
+    print(classification_report(Y_test, prediction, target_names=category_names))
 
 
 def save_model(model, model_filepath):
-    
     pass
 
 

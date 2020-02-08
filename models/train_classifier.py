@@ -1,8 +1,8 @@
+import pickle
 import re
 import sys
 
 import nltk
-# import libraries
 import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
@@ -13,17 +13,13 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
 from sqlalchemy import create_engine
 
 # install required NLTK corpus
 nltk.download('stopwords')
 nltk.download('wordnet')
 nltk.download('punkt')
-
-stop_words = stopwords.words('english')
-lemmatizer = WordNetLemmatizer()
-url_regex = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
 
 
 def load_data(database_filepath):
@@ -35,28 +31,37 @@ def load_data(database_filepath):
     return X, Y, Y.columns.values
 
 
+stop_words = stopwords.words('english')
+lemmatizer = WordNetLemmatizer()
+url_regex = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+
+
 def tokenize(text):
-    # remove URL
-    text = re.sub(url_regex, " ", text.lower())
-    # Normalize case and remove punctuation
-    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
+    detected_urls = re.findall(url_regex, text)
+    for url in detected_urls:
+        text = text.replace(url, "urlplaceholder")
 
-    # tokernize test
     tokens = word_tokenize(text)
+    clean_tokens = []
+    for tok in tokens:
+        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+        clean_tokens.append(clean_tok)
 
-    # lemmatize and remove stop stop words
-    tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words]
-    return tokens
+    return clean_tokens
 
 
 def build_pipeline(estimator):
     pipeline = Pipeline([
-        ('transformer', Pipeline([
-            ('vect', CountVectorizer(tokenizer=tokenize)),
-            ('tfidf', TfidfTransformer())
+        ('features', FeatureUnion([
+            ('text_pipeline', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf', TfidfTransformer())
+            ]))
         ])),
+
         ('clf', estimator)
     ])
+
     return pipeline
 
 
@@ -72,7 +77,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    pass
+    pickle.dump(model, open(model_filepath, 'wb'))
 
 
 def main():
@@ -89,9 +94,9 @@ def main():
         model.fit(X_train, Y_train)
 
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        # evaluate_model(model, X_test, Y_test, category_names)
 
-        print('Saving model...\n    MODEL: {}'.format(model_filepath))
+        # print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
 
         print('Trained model saved!')

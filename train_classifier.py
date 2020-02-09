@@ -181,7 +181,7 @@ def main():
         model.fit(X_train, Y_train)
 
         print('Evaluating model...')
-        # evaluate_model(model, X_test, Y_test, category_names) todo
+        evaluate_model(model, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
@@ -196,6 +196,9 @@ def main():
 
 
 if __name__ == '__main__':
+    # to debug
     if len(sys.argv) == 0:
         sys.argv = ['.', './data/DisasterResponse.db', './models/classifier.pkl']
+
+    # run main thread
     main()

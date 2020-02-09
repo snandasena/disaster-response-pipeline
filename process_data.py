@@ -112,4 +112,9 @@ def main():
 
 
 if __name__ == '__main__':
+    # to debug
+    if len(sys.argv) == 0:
+        sys.argv = ['.', './data/disaster_messages.csv', './data/disaster_categories.csv', './data/DisasterResponse.db']
+
+    # run main thread
     main()

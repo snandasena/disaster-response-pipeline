@@ -160,7 +160,4 @@ def main():
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 0:
-        sys.argv = ['.', './data/DisasterResponse.db', './models/classifier.pkl']
-
     main()

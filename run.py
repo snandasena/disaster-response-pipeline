@@ -30,15 +30,17 @@ def tokenize(text):
 # create a flask app
 app = Flask(__name__, template_folder='app/templates')
 
+#
+database_file_location, model_location = sys.argv[1:]
 # load data
-engine = create_engine('sqlite:///{}'.format(sys.argv[0]))
-df = pd.read_sql_table(sys.argv[1], engine)
+engine = create_engine('sqlite:///{}'.format(database_file_location))
+df = pd.read_sql_table('DisasterResponse', engine)
 
 # category df
 df_categories = df.iloc[:, 4:]
 
 # load model
-model = joblib.load(sys.argv[2])
+model = joblib.load(model_location)
 
 
 def generate_graph_with_template(data, title, yaxis_title, xaxi_title):
@@ -155,6 +157,6 @@ def main():
 
 if __name__ == '__main__':
     if len(sys.argv) == 0:
-        sys.argv = ['./data/DisasterResponse.db', 'DisasterResponse', './models/classifier.pkl']
+        sys.argv = ['.', './data/DisasterResponse.db', './models/classifier.pkl']
 
     main()

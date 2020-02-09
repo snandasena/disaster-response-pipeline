@@ -12,6 +12,10 @@ sys.path.append("common")
 
 from common.nlp_common_utils import *
 
+if len(sys.argv) == 1:
+    sys.argv.append('./data/DisasterResponse.db')
+    sys.argv.append('./models/classifier.pkl')
+
 
 # this requires for joblib and pickle
 def tokenize(text):

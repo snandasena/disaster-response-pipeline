@@ -1,14 +1,30 @@
 import json
 import sys
-from itertools import product
 
 import plotly
-import pandas as pd
 from flask import Flask
 from flask import render_template, request
 from plotly.graph_objects import Heatmap, Bar
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
+
+sys.path.append("common")
+from common.nlp_common_utils import *
+
+
+# this requires for joblib and pickle
+def tokenize(text):
+    """
+    Used a common utility functions for tokenize text in to cleaned token list.
+
+    INPUT:
+        text - raw message
+
+    OUTPUT:
+        clean_tokens -- cleaned tokenized list
+    """
+    return tokenize_text(text)
+
 
 # create a flask app
 app = Flask(__name__)

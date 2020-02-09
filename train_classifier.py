@@ -1,14 +1,16 @@
 import pickle
 import sys
 
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.metrics import classification_report
+from sklearn.metrics import *
+from sklearn.utils.multiclass import is_multilabel
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.model_selection import GridSearchCV
 from sqlalchemy import create_engine
 
 # append common util to `this` runtime
@@ -63,7 +65,7 @@ def build_pipeline(estimator):
     pipeline = Pipeline([
         ('features', FeatureUnion([
             ('text_pipeline', Pipeline([
-                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('vect', CountVectorizer(tokenizer=tokenize_text)),
                 ('tfidf', TfidfTransformer())
             ])),
             ('starting_verb_noun', StartingVerbExtractor()),
@@ -146,8 +148,10 @@ def evaluate_model(model, X_test, Y_test, category_names):
         classification_report's console output
 
     """
-    prediction = model.predict(X_test)
-    print(classification_report(Y_test, prediction, target_names=category_names))
+    Y_pred = model.predict(X_test)
+    for i, cat in enumerate(category_names):
+        print("Category:", cat, "\n", classification_report(Y_test.iloc[:, i].values, Y_pred[:, i]))
+        print('Accuracy of %25s: %.2f' % (cat, accuracy_score(Y_test.iloc[:, i].values, Y_pred[:, i])))
 
 
 def save_model(model, model_filepath):
@@ -177,7 +181,7 @@ def main():
         model.fit(X_train, Y_train)
 
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        # evaluate_model(model, X_test, Y_test, category_names) todo
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)

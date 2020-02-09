@@ -67,7 +67,7 @@ model = build_model(enable_param_tuning=True)
 After ETL and ML pipeline completion, the app will be started automatically.  
 Then go to web browser and hit the this url ``http://localhost:3001/``.
 
-###Acknowledgments
+### Acknowledgments  
 **Licensing, Authors, Acknowledgements**
 
 Big thank you to [Udacity](https://www.figure-eight.com/) for providing the template code for this project. Also want to thank [Figure Eight](https://www.figure-eight.com/) for providing the data.  

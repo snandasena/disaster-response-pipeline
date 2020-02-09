@@ -1,12 +1,6 @@
 import pickle
-import re
 import sys
 
-import nltk
-import pandas as pd
-from nltk.corpus import stopwords
-from nltk.stem.wordnet import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.metrics import classification_report
@@ -14,40 +8,24 @@ from sklearn.model_selection import train_test_split
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.model_selection import GridSearchCV
 from sqlalchemy import create_engine
 
-# install required NLTK corpus
-nltk.download('stopwords')
-nltk.download('wordnet')
-nltk.download('punkt')
+sys.path.append('common')
+from common.nlp_common_utils import *
 
 
 def load_data(database_filepath):
     # load data from database
     engine = create_engine('sqlite:///{}'.format(database_filepath))
     df = pd.read_sql("select * from DisasterResponse", engine)
-    X = df['message']
-    Y = df.drop(['id', 'message', 'original', 'genre'], axis=1)
+    X = df.loc[:, 'message']
+    Y = df.iloc[:, 4:]
     return X, Y, Y.columns.values
 
 
-stop_words = stopwords.words('english')
-lemmatizer = WordNetLemmatizer()
-url_regex = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-
-
 def tokenize(text):
-    detected_urls = re.findall(url_regex, text)
-    for url in detected_urls:
-        text = text.replace(url, "urlplaceholder")
-
-    tokens = word_tokenize(text)
-    clean_tokens = []
-    for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tokens.append(clean_tok)
-
-    return clean_tokens
+    return tokenize_text(text)
 
 
 def build_pipeline(estimator):
@@ -56,7 +34,11 @@ def build_pipeline(estimator):
             ('text_pipeline', Pipeline([
                 ('vect', CountVectorizer(tokenizer=tokenize)),
                 ('tfidf', TfidfTransformer())
-            ]))
+            ])),
+            ('starting_verb_noun', StartingVerbExtractor()),
+            ('count_verbs', VerbCountExtractor()),
+            ('count_nouns', NounCountExtractor()),
+            ('starting_modals', StartingModalExtractor())
         ])),
 
         ('clf', estimator)
@@ -65,9 +47,34 @@ def build_pipeline(estimator):
     return pipeline
 
 
-def build_model():
+parameters = {
+    'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
+    'features__text_pipeline__vect__max_df': (0.5, 0.75, 1.0),
+    'features__text_pipeline__vect__max_features': (None, 10, 100),
+    'features__text_pipeline__tfidf__use_idf': (True, False),
+    'clf__estimator__estimator__n_estimators': [10, 20, 100],
+    'clf__estimator__estimator__min_samples_split': [2, 3, 4],
+    'features__transformer_weights': (
+        {'text_pipeline': 1, 'starting_verb': 0.5},
+        {'text_pipeline': 0.5, 'starting_verb': 1},
+        {'text_pipeline': 0.8, 'starting_verb': 1},
+    )
+}
+
+
+def hyper_param_tuning(pipeline, params=None):
+    if params is None:
+        params = parameters
+    cv = GridSearchCV(pipeline, param_grid=params)
+
+    return cv
+
+
+def build_model(enable_param_tuning=False):
     estimator = MultiOutputClassifier(OneVsRestClassifier(RandomForestClassifier(n_jobs=5)))
     pipeline = build_pipeline(estimator)
+    if enable_param_tuning:
+        return hyper_param_tuning(pipeline)
     return pipeline
 
 
@@ -88,7 +95,7 @@ def main():
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
 
         print('Building model...')
-        model = build_model()
+        model = build_model(enable_param_tuning=True)
 
         print('Training model...')
         model.fit(X_train, Y_train)
@@ -109,4 +116,6 @@ def main():
 
 
 if __name__ == '__main__':
+    debug_data = ['.', './data/DisasterResponse.db', './models/classifier.pkl']
+    sys.argv = debug_data
     main()

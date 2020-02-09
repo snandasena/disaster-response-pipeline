@@ -150,3 +150,5 @@ notebook/classifier.pkl
 models/classifier.pkl
 # ignore unnessary data
 notebook/data.csv
+
+temp/

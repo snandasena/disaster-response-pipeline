@@ -1,35 +1,19 @@
 import json
-import re
-import pandas as pd
+import sys
 import plotly
 from flask import Flask
 from flask import render_template, request
-from nltk.corpus import stopwords
-from nltk.stem.wordnet import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
 from plotly.graph_objs import Bar
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
+sys.path.append('../common')
+from common.nlp_common_utils import *
 
 app = Flask(__name__)
 
-stop_words = stopwords.words('english')
-lemmatizer = WordNetLemmatizer()
-url_regex = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-
 
 def tokenize(text):
-    detected_urls = re.findall(url_regex, text)
-    for url in detected_urls:
-        text = text.replace(url, "urlplaceholder")
-
-    tokens = word_tokenize(text)
-    clean_tokens = []
-    for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tokens.append(clean_tok)
-
-    return clean_tokens
+    return tokenize_text(text)
 
 
 # load data

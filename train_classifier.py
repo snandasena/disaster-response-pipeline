@@ -1,11 +1,9 @@
 import pickle
 import sys
 
-import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.metrics import *
-from sklearn.utils.multiclass import is_multilabel
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.multiclass import OneVsRestClassifier

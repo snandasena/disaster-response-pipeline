@@ -1,5 +1,5 @@
-import json
 import sys
+import json
 
 import plotly
 from flask import Flask
@@ -9,6 +9,7 @@ from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
 sys.path.append("common")
+
 from common.nlp_common_utils import *
 
 
@@ -27,17 +28,17 @@ def tokenize(text):
 
 
 # create a flask app
-app = Flask(__name__)
+app = Flask(__name__, template_folder='app/templates')
 
 # load data
-engine = create_engine('sqlite:///../data/DisasterResponse.db')
-df = pd.read_sql_table('DisasterResponse', engine)
+engine = create_engine('sqlite:///{}'.format(sys.argv[0]))
+df = pd.read_sql_table(sys.argv[1], engine)
 
 # category df
 df_categories = df.iloc[:, 4:]
 
 # load model
-model = joblib.load("../models/classifier.pkl")
+model = joblib.load(sys.argv[2])
 
 
 def generate_graph_with_template(data, title, yaxis_title, xaxi_title):
@@ -153,4 +154,7 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 0:
+        sys.argv = ['./data/DisasterResponse.db', 'DisasterResponse', './models/classifier.pkl']
+
     main()

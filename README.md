@@ -52,9 +52,8 @@ python train_classifier.py ./data/DisasterResponse.db ./models/classifier.pkl
 
 # run the application
 # shellcheck disable=SC2164
-cd app
-
-python run.py 
+python run.py ./data/DisasterResponse.db DisasterResponse ./models/classifier.pkl
+ 
 ```
 #### Note: To enable hyper parameter tuning please change the following code line 
 **From:** 

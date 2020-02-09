@@ -4,7 +4,6 @@
 **01.** Python3.6(Python3)  
 **02.** Virtualenv  
 **03.** Requirements that are in **requirements.txt**  
-**04.** Extract data.tar.gz 
 
 ##### Step 01: Clone the project to your workplace
 If you are using a ssh key for GitHub, please use flowing git command to clone the project.

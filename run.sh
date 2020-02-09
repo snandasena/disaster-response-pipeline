@@ -18,4 +18,7 @@ rm -rf ./models/classifier.pkl >/dev/null
 python train_classifier.py ./data/DisasterResponse.db ./models/classifier.pkl
 
 # run the application
-#cd app && python run.py
+# shellcheck disable=SC2164
+cd app
+
+python run.py

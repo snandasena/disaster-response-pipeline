@@ -6,7 +6,7 @@ from train_classifier import *
 staring_verb_extractor = StartingVerbExtractor()
 verb_count_extractor = VerbCountExtractor()
 starting_modal_extractor = StartingModalExtractor()
-noun_count_extrator = NounCountExtractor()
+noun_count_extractor = NounCountExtractor()
 
 
 def test_load_data(file_name):
@@ -34,7 +34,7 @@ def test_stating_modals(text):
 
 
 def test_total_noun_counts(text):
-    print(noun_count_extrator.count_nouns(text))
+    print(noun_count_extractor.count_nouns(text))
 
 
 if __name__ == "__main__":

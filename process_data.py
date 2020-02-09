@@ -1,16 +1,19 @@
+# import libraries
 import sys
 
-# import libraries
 import pandas as pd
 from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
     """
+    Load messages and categories from csv files into a pandas DF.
 
-    :param messages_filepath:
-    :param categories_filepath:
-    :return:
+    INPUT:
+        messages_filepath - path to location of messages csv file
+        categories_filepath - path to location of categories csv files
+    OUTPUT:
+        df - pandas DF with messages and categories
     """
     # load messages dataset
     messages = pd.read_csv(messages_filepath)
@@ -24,10 +27,17 @@ def load_data(messages_filepath, categories_filepath):
 
 def clean_data(df):
     """
+    Clean data in a pandas DF.
+    Clean data in a pandas DF by renaming category columns, convert
+    category values to 0 or 1 and drop duplicates.
 
-    :param df:
-    :return:
+    INPUT:
+        df - pandas dataframe with messages and categories in source format
+
+    OUTPUT:
+        df - cleaned pandas dataframe with messages and categories
     """
+
     # create a dataframe of the 36 individual category columns
     categories = df['categories'].str.split(';', expand=True)
     # select the first row of the categories dataframe
@@ -61,20 +71,21 @@ def clean_data(df):
 
 def save_data(df, database_filename):
     """
+    Save data from a pandas df into SQLite database.
 
-    :param df:
-    :param database_filename:
-    :return:
+    INPUT:
+      df -- pandas DF with messages and categories
+      database_filename -- path to location of database file
+
+    OUTPUT:
+
     """
+
     engine = create_engine('sqlite:///{}'.format(database_filename))
     df.to_sql('DisasterResponse', engine, index=False)
 
 
 def main():
-    """
-
-    :return:
-    """
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]

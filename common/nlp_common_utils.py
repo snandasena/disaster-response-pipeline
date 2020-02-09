@@ -95,6 +95,15 @@ class StartingModalExtractor(BaseEstimator, TransformerMixin):
 
 
 def tokenize_text(text):
+    """
+        Apply case normalization, lemmatize and tokenize text.
+
+        INPUT:
+            text -- text in source format
+        OUTPUT:
+            clean_tokens -- cleaned tokenized list
+    """
+
     # transform to lower case
     text = text.lower()
     # remove urls

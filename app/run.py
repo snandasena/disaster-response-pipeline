@@ -3,31 +3,38 @@ import sys
 from itertools import product
 
 import plotly
+import pandas as pd
 from flask import Flask
 from flask import render_template, request
 from plotly.graph_objects import Heatmap, Bar
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
-sys.path.append('../common')
-from common.nlp_common_utils import *
-
+# create a flask app
 app = Flask(__name__)
-
-
-def tokenize(text):
-    return tokenize_text(text)
-
 
 # load data
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
 df = pd.read_sql_table('DisasterResponse', engine)
-df_categories = df.iloc[:, 4:].sum()
+
+# category df
+df_categories = df.iloc[:, 4:]
+
 # load model
 model = joblib.load("../models/classifier.pkl")
 
 
 def generate_graph_with_template(data, title, yaxis_title, xaxi_title):
+    """
+    This common layout can be used to create Plotly graph layout.
+    INPUT:
+        data - a graph required JSON data i.e list
+        title - a tile of the chart
+        yaxis_title - Y title
+        xaxix_title - X title
+    OUTPUT:
+        layout for particular graph.
+    """
     return {
         'data': [data],
 
@@ -44,6 +51,9 @@ def generate_graph_with_template(data, title, yaxis_title, xaxi_title):
 
 
 def generate_message_genres_bar_chart():
+    """
+    create a graph using extracted data for `genre`
+    """
     # extract data needed for visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
@@ -55,8 +65,11 @@ def generate_message_genres_bar_chart():
 
 
 def generate_message_categories_distribution_bar_chart():
-    data = Bar(x=[s.replace("_", " ") for s in df_categories.index],
-               y=list(df_categories.sort_values(ascending=False)))
+    """
+    create a graph for distribution of the messages.
+    """
+    data = Bar(x=df_categories.columns,
+               y=list(df_categories.sum().sort_values(ascending=False)))
     title = 'Distribution of Message Categories'
     y_title = 'Count'
     x_title = 'Category'
@@ -65,10 +78,13 @@ def generate_message_categories_distribution_bar_chart():
 
 
 def generate_two_cat_relation_heat_map():
+    """
+    A correlation matrix for categories
+    """
     data = Heatmap(
-        z=df.iloc[:, 4:].corr(),
-        y=df.iloc[:, 4:].columns,
-        x=df.iloc[:, 4:].columns)
+        z=df_categories.corr(),
+        y=df_categories.columns,
+        x=df_categories.columns)
 
     title = 'Correlation Distribution of Categories'
     y_title = 'Category'
